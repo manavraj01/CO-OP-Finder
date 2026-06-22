@@ -34,11 +34,12 @@ jobs:
           GMAIL_TOKEN_JSON: ${{ secrets.GMAIL_TOKEN_JSON }}
         run: printf '%s' "$GMAIL_TOKEN_JSON" > token.json
 
-      # Install and run in one step — guarantees same Python interpreter is used
+      # Virtualenv guarantees install and run use the exact same Python binary
       - name: Install deps and run monitor
         run: |
-          pip3 install -r requirements.txt
-          python3 monitor_coops.py
+          python3 -m venv /tmp/venv
+          /tmp/venv/bin/pip install -r requirements.txt
+          /tmp/venv/bin/python monitor_coops.py
 
       # Commit the updated snapshot so the next run knows what's already been seen
       - name: Save snapshot back to repo
