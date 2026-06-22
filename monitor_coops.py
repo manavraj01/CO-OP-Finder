@@ -41,6 +41,17 @@ LINK_RE = re.compile(r"\]\(\s*<?(https?://[^)>\s]+)>?\s*\)")
 COMMENT_RE = re.compile(r"<!--.*?-->")
 TAG_RE = re.compile(r"<[^>]+>")
 
+# Winter 2027 filter — matches term indicators in role/details text
+WINTER_2027_RE = re.compile(
+    r"winter\s*2027|w[-_]?2027|2027\s*winter|"
+    r"jan(uary)?\s*2027|feb(ruary)?\s*2027|mar(ch)?\s*2027|apr(il)?\s*2027",
+    re.IGNORECASE,
+)
+OTHER_TERM_RE = re.compile(
+    r"(summer|fall|spring|winter)\s*20(?!27)\d\d",
+    re.IGNORECASE,
+)
+
 
 def http_get(url):
     req = urllib.request.Request(url, headers={"User-Agent": "monitor/1.0"})
@@ -137,6 +148,7 @@ def parse_tables(md, source):
                 "location": location or "—",
                 "url": url,
                 "source": source,
+                "details": details,
             })
 
     for line in md.split("\n"):
@@ -235,6 +247,18 @@ def main():
     
     current = fetch_all()
     print(f"→ Found {len(current)} total postings")
+
+    # Keep only Winter 2027 positions
+    def is_winter_2027(row: dict) -> bool:
+        text = f"{row.get('role', '')} {row.get('details', '')}".lower()
+        if WINTER_2027_RE.search(text):
+            return True
+        if OTHER_TERM_RE.search(text):
+            return False
+        return True  # no term info found — include to avoid missing postings
+
+    current = [r for r in current if is_winter_2027(r)]
+    print(f"→ {len(current)} Winter 2027 postings after filter")
     
     previous = []
     if os.path.exists(SNAPSHOT_FILE):
