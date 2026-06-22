@@ -17,14 +17,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: python -m pip install -r requirements.txt
-
       # Write .env from GitHub Secrets so the script can load_dotenv() normally
       - name: Write .env
         env:
@@ -42,8 +34,11 @@ jobs:
           GMAIL_TOKEN_JSON: ${{ secrets.GMAIL_TOKEN_JSON }}
         run: printf '%s' "$GMAIL_TOKEN_JSON" > token.json
 
-      - name: Run co-op monitor
-        run: python monitor_coops.py
+      # Install and run in one step — guarantees same Python interpreter is used
+      - name: Install deps and run monitor
+        run: |
+          pip3 install -r requirements.txt
+          python3 monitor_coops.py
 
       # Commit the updated snapshot so the next run knows what's already been seen
       - name: Save snapshot back to repo
