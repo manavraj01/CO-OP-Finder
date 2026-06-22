@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt
 
       # Write .env from GitHub Secrets so the script can load_dotenv() normally
       - name: Write .env
