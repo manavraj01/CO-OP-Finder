@@ -1,0 +1,55 @@
+name: Daily Co-op Monitor
+
+on:
+  schedule:
+    - cron: '0 12 * * *'   # Every day at noon UTC (8 AM Eastern / 5 AM Pacific)
+  workflow_dispatch:        # Lets you trigger a run manually from the GitHub UI
+
+permissions:
+  contents: write           # Needed to commit the updated snapshot back to the repo
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install python-dotenv google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+      # Write .env from GitHub Secrets so the script can load_dotenv() normally
+      - name: Write .env
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+        run: |
+          printf 'GOOGLE_CLIENT_ID=%s\n' "$GOOGLE_CLIENT_ID" > .env
+          printf 'GOOGLE_CLIENT_SECRET=%s\n' "$GOOGLE_CLIENT_SECRET" >> .env
+          printf 'ALERT_EMAIL=%s\n' "$ALERT_EMAIL" >> .env
+
+      # Write token.json from the GMAIL_TOKEN_JSON secret (full JSON content)
+      - name: Write token.json
+        env:
+          GMAIL_TOKEN_JSON: ${{ secrets.GMAIL_TOKEN_JSON }}
+        run: printf '%s' "$GMAIL_TOKEN_JSON" > token.json
+
+      - name: Run co-op monitor
+        run: python monitor_coops.py
+
+      # Commit the updated snapshot so the next run knows what's already been seen
+      - name: Save snapshot back to repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .coops_snapshot.json
+          git diff --cached --quiet || git commit -m "chore: update job snapshot [skip ci]"
+          git push
