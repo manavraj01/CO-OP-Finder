@@ -22,7 +22,8 @@ try:
     from googleapiclient.discovery import build
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
-except ImportError:
+except ImportError as e:
+    print(f"ImportError: {e}")
     print("Install: pip install google-auth-oauthlib google-auth-httplib2 google-api-python-client")
     sys.exit(1)
 
