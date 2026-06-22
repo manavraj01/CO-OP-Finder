@@ -18,7 +18,7 @@ except ImportError:
 try:
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
-    from google.auth.oauthlib.flow import InstalledAppFlow
+    from google_auth_oauthlib.flow import InstalledAppFlow
     from googleapiclient.discovery import build
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
