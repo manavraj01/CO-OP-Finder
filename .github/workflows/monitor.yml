@@ -2,7 +2,8 @@ name: Daily Co-op Monitor
 
 on:
   schedule:
-    - cron: '0 12 * * *'   # Every day at noon UTC (8 AM Eastern / 5 AM Pacific)
+    - cron: '0 16 * * *'   # 12 PM Eastern
+    - cron: '0 19 * * *'   # 3 PM Eastern
   workflow_dispatch:        # Lets you trigger a run manually from the GitHub UI
 
 permissions:
