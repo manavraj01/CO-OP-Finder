@@ -21,10 +21,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
 
       - name: Install dependencies
-        run: pip install python-dotenv google-auth-oauthlib google-auth-httplib2 google-api-python-client
+        run: pip install -r requirements.txt
 
       # Write .env from GitHub Secrets so the script can load_dotenv() normally
       - name: Write .env
